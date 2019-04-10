@@ -1,0 +1,10 @@
+
+\.ipynb_checkpoints/
+
+model/__pycache__/
+model/evaluation/__pycache__/
+
+*.pptx#
+data/preprocessedData/train_questions.csv
+data/preprocessedData/dev_questions.csv
+.git_old
