@@ -29,4 +29,4 @@ def load_glove(path):
 
 word2vec = load_glove(EMBED_FILENAME)
 
-train(training_data, dev_data, word2vec, embedding_dim, hidden_dim, no_epochs)
+losses = train(training_data, dev_data, word2vec, embedding_dim, hidden_dim, no_epochs)

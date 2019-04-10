@@ -10,18 +10,18 @@ import torch.nn as nn
 import torch.optim as optim
 
 
-def get_embedding(vocab, word2vec, dim= 300):
-    vecs = [np.zeros(300)]
+def get_embedding(vocab, word2vec, embedding_dim):
+    vecs = [np.zeros(embedding_dim)]
     for word in vocab:
         try:
             vec = word2vec[word]
         except KeyError:
-            vec = np.zeros(300)
+            vec = np.zeros(embedding_dim)
         vecs.append(vec)
     return np.stack(vecs)
 
 
-def train(training_data, dev_data, word2vec, embedding_dim, hidden_dim, no_epochs):
+def train(training_data, dev_data, word2vec, embedding_dim, hidden_dim, no_epochs, lr=0.001, weight_decay=1e-4):
 
     # consider lower or not
     word2freq = Counter([word.lower() for sentence, tags in training_data for word in sentence])
@@ -29,7 +29,7 @@ def train(training_data, dev_data, word2vec, embedding_dim, hidden_dim, no_epoch
     # consider changing threshold
     vocab = np.array([word for word, freq in word2freq.most_common() if 1 < freq])
 
-    weights = torch.tensor(get_embedding(vocab, word2vec))
+    weights = torch.tensor(get_embedding(vocab, word2vec, embedding_dim))
     word_to_ix = {word: idx for idx, word in enumerate(vocab, 1)}
     word_to_ix["�"] = 0
 
@@ -42,7 +42,7 @@ def train(training_data, dev_data, word2vec, embedding_dim, hidden_dim, no_epoch
     tag_to_ix = {"B": 0, "I": 1, "O": 2, START_TAG: 3, STOP_TAG: 4}
 
     model = BiLSTM_CRF(len(word_to_ix), tag_to_ix, embedding_dim, hidden_dim, START_TAG, STOP_TAG, weights)
-    optimizer = optim.SGD(model.parameters(), lr=0.01, weight_decay=1e-4)
+    optimizer = optim.Adam(model.parameters(), lr= lr, weight_decay= weight_decay)
 
     # Check predictions before training
     with torch.no_grad():
@@ -79,3 +79,5 @@ def train(training_data, dev_data, word2vec, embedding_dim, hidden_dim, no_epoch
             print(model(precheck_sent))
         avg_losses.append(np.mean(losses))
         # We got it!
+
+    return avg_losses
