@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 from sklearn_crfsuite import CRF
 
 from model.crf_utils import Custom_CRF
-from evaluate_qa_utils import char_index_2_token_index, get_likelihoods, string_to_token_index, find_property_to_questionid, substring_match, complete_match
+from evaluate_qa_utils import get_likelihoods, string_to_token_index, find_property_to_questionid, substring_match, complete_match
 #%% Parameter
 DEV_QUESTIONS_FILENAME = "data/preprocessedData/dev_questions.csv"
 MODEL_PREDICTIONS_FILENAME = "data/model_predictions/BiDAF + Self Attention + ELMo (single model) (Allen Institute for Artificial Intelligence [modified by Stanford]).json"
@@ -25,7 +25,7 @@ with open(MODEL_PREDICTIONS_FILENAME) as json_data:
                                                            ignore_index=True)
 DF_MODEL_PREDICTIONS.head()
 
-#%% 
+#%%
 DF_DEV_QUESTIONS = pd.read_csv(DEV_QUESTIONS_FILENAME, index_col="question_id")
 DF_DEV_QUESTIONS.head()
 
@@ -50,7 +50,10 @@ DF_MODEL_PREDICTIONS.head()
 #%% calculate the likelihood of the answer and the correct answer
 all_answer_likelihoods = []
 all_correct_answer_likelihood = []
-for paragraph, correct_answer_token_indices, answer_token_indices in tqdm(zip(DF_MODEL_PREDICTIONS["paragraph"], DF_MODEL_PREDICTIONS["correct_answer_token_index"], DF_MODEL_PREDICTIONS["answer_token_index"])):
+for index, row in tqdm(DF_MODEL_PREDICTIONS.iterrows()):
+    paragraph = row["paragraph"]
+    correct_answer_token_indices = row["correct_answer_token_index"]
+    answer_token_indices = row["answer_token_index"]
     correct_answer_likelihood, answer_likelihood = get_likelihoods(paragraph, correct_answer_token_indices, answer_token_indices, crf)
     all_correct_answer_likelihood.append(correct_answer_likelihood)
     all_answer_likelihoods.append(answer_likelihood)
@@ -78,22 +81,24 @@ DF_MODEL_PREDICTIONS.head(50)
 #%%
 DF_MODEL_PREDICTIONS_PRED_ANSABLE = DF_MODEL_PREDICTIONS[DF_MODEL_PREDICTIONS["answer"] != ""]
 DF_MODEL_PREDICTIONS_PRED_ANSABLE_IS_NONANSABLE = DF_MODEL_PREDICTIONS_PRED_ANSABLE[[row == [] for row in DF_MODEL_PREDICTIONS_PRED_ANSABLE["correct_answer_text"]]]
-len(DF_MODEL_PREDICTIONS_PRED_ANSABLE_IS_NONANSABLE)
+print("#PredAnswerable - IsNonanswerable", len(DF_MODEL_PREDICTIONS_PRED_ANSABLE_IS_NONANSABLE))
 #%%
 DF_MODEL_PREDICTIONS_PRED_ANSABLE_IS_ANSABLE = DF_MODEL_PREDICTIONS_PRED_ANSABLE[[row != [] for row in DF_MODEL_PREDICTIONS_PRED_ANSABLE["correct_answer_text"]]]
-len(DF_MODEL_PREDICTIONS_PRED_ANSABLE_IS_ANSABLE)
+print("#PredAnswerable - IsAnswerable", len(DF_MODEL_PREDICTIONS_PRED_ANSABLE_IS_ANSABLE))
 #%%
 DF_MODEL_PREDICTIONS_PRED_NONANSABLE = DF_MODEL_PREDICTIONS[DF_MODEL_PREDICTIONS["answer"] == ""]
 DF_MODEL_PREDICTIONS_PRED_NONANSABLE_IS_NONANSABLE = DF_MODEL_PREDICTIONS_PRED_NONANSABLE[[row == [] for row in DF_MODEL_PREDICTIONS_PRED_NONANSABLE["correct_answer_text"]]]
-len(DF_MODEL_PREDICTIONS_PRED_NONANSABLE_IS_NONANSABLE)
+print("#PredNonanswerable - IsNonanswerable", len(DF_MODEL_PREDICTIONS_PRED_NONANSABLE_IS_NONANSABLE))
 #%%
 DF_MODEL_PREDICTIONS_PRED_NONANSABLE_IS_ANSABLE = DF_MODEL_PREDICTIONS_PRED_NONANSABLE[[row != [] for row in DF_MODEL_PREDICTIONS_PRED_NONANSABLE["correct_answer_text"]]]
-len(DF_MODEL_PREDICTIONS_PRED_NONANSABLE_IS_ANSABLE)
+print("#PredNonanswerable - IsAnswerable", len(DF_MODEL_PREDICTIONS_PRED_NONANSABLE_IS_ANSABLE))
 #%%
 DF_MODEL_PREDICTIONS_DROPNA = DF_MODEL_PREDICTIONS.dropna(subset=["answer_likelihood", "correct_answer_likelihood"])
 
 DF_MODEL_PREDICTIONS_correct = DF_MODEL_PREDICTIONS_DROPNA[DF_MODEL_PREDICTIONS_DROPNA["substring_match"] == True]
 DF_MODEL_PREDICTIONS_wrong = DF_MODEL_PREDICTIONS_DROPNA[DF_MODEL_PREDICTIONS_DROPNA["substring_match"] == False]
+print("#PredAnswerable - IsAnswerable - True", len(DF_MODEL_PREDICTIONS_correct))
+print("#PredAnswerable - IsAnswerable - False", len(DF_MODEL_PREDICTIONS_wrong))
 
 #%%
 len(DF_MODEL_PREDICTIONS_correct)
