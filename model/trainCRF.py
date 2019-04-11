@@ -11,11 +11,10 @@ from sklearn.model_selection import RandomizedSearchCV
 
 import sklearn_crfsuite
 
-from model.crf_utils import text2features, visualize_rs_result
+from model.crf_utils import text2features, visualize_rs_result, Custom_CRF
 
 #%%
 nlp = spacy.load('en')
-
 
 #%%
 TRAIN_FILENAME = "data/preprocessedData/train_IO_with_plausible_answers.csv"
@@ -26,7 +25,6 @@ df_askable_paragraph_train["askable_tokens"] = [ast.literal_eval(t) for t in df_
 
 #%%
 df_askable_paragraph_train_sample = df_askable_paragraph_train.sample(n=1000, random_state=1)
-
 
 #%%
 POS_FEATURES = True
@@ -42,12 +40,6 @@ END = 1
 #%%
 X_train_sample = [text2features(nlp(s), pos_features=POS_FEATURES, ent_type_features=ENT_TYPE_FEATURES, lemma_features=LEMMA_FEATURES, is_features=IS_FEATURES, position_features=POSITION_FEATURES, bias=BIAS, begin=BEGIN, end=END) for s in tqdm(df_askable_paragraph_train_sample["paragraph_context"])]
 y_train_sample = list(df_askable_paragraph_train_sample["askable_tokens"])
-
-#%%
-class Custom_CRF(sklearn_crfsuite.CRF):
-    def predict_proba(self, X):
-        return self.predict_marginals(X)
-
 
 #%%
 def custom_roc_auc_score(y_trues, prob_pred):

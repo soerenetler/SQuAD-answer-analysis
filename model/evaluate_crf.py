@@ -29,7 +29,6 @@ with open(filename, 'rb') as f:
 #%%
 TEST_FILENAME = "data/preprocessedData/dev_IO_with_plausible_answers.csv"
 df_askable_paragraph_test = pd.read_csv(TEST_FILENAME)
-#df_askable_paragraph_test["paragraph_context_tokens"] = [ast.literal_eval(t) for t in df_askable_paragraph_test["paragraph_context_tokens"]]
 df_askable_paragraph_test["askable_tokens"] = [ast.literal_eval(t) for t in df_askable_paragraph_test["askable_tokens"]]
 
 #%%
