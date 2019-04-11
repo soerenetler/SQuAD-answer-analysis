@@ -7,3 +7,5 @@ __pycache__
 /data/preprocessedData/train_questions.csv
 
 /.git_old
+
+*.pptx
