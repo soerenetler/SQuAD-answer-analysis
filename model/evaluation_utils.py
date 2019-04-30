@@ -7,7 +7,7 @@ from graphviz import Digraph
 from sklearn_crfsuite import metrics
 from sklearn.metrics import log_loss, roc_curve, roc_auc_score
 
-from IPython.display import HTML, display
+from IPython.display import HTML, Latex, display
 import matplotlib.pyplot as plt
 
 
@@ -66,6 +66,18 @@ def print_annotated_text(token_list, y_preds, y_trues=None):
                       "</span>"
     #print(output)
     display(HTML(output))
+
+def print_annotated_text_latex(token_list, y_preds, y_trues=None):
+    if y_trues is None:
+        y_trues = ["O"] * len(y_preds)
+    output = ""
+    for token, y_pred, y_true in zip(token_list, y_preds, y_trues):
+        if y_true == "O":
+            output += "\colorbox{white!"+ str(100 - int(y_pred["I"]*100)) + "!red}{" + token + "}"
+        else:
+            output += "\colorbox{white!"+ str(100 - int(y_pred["I"]*100)) + "!red}{\\underline{" + token + "}}"
+    #print(output)
+    return output
 
 def crf_roc_curve(y_trues, prob_pred):
     '''[summary]
