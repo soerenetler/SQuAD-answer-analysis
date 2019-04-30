@@ -9,6 +9,7 @@
 - pandas
 - tqdm
 - spacy
+- pickle
 
 ## Preprocessing
 The data is preprocessed in the preprocessing.py script. It keeps the original train / dev split. The raw Date is expected in the folder data/rawData with the dev-v2.0.json and the train-v2.0.json.
